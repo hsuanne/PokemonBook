@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">PokemonBook</string>
+    <string name="ATK_num">ATK %d</string>
+    <string name="DEF_num">DEF %d</string>
+    <string name="SPD_num">SPD %d</string>
+    <string name="total_num">TOTAL %d</string>
+    <string name="HP_num">HP %d</string>
+    <string name="Height_num">HEIGHT %s</string>
+    <string name="Weight_num">WEIGHT %s</string>
+</resources>
