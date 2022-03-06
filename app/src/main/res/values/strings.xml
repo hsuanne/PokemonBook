@@ -7,4 +7,9 @@
     <string name="HP_num">HP %d</string>
     <string name="Height_num">HEIGHT %s</string>
     <string name="Weight_num">WEIGHT %s</string>
+    <string name="sort">SORT</string>
+    <string name="default_tab">DEFAULT</string>
+    <string name="attack_tab">ATK</string>
+    <string name="defense_tab">DEF</string>
+    <string name="speed_tab">SPD</string>
 </resources>

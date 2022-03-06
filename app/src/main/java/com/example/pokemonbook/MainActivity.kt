@@ -6,11 +6,6 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.gson.GsonBuilder
-import com.google.gson.reflect.TypeToken
-import okhttp3.*
-import org.json.JSONArray
-import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
     private val pokemonViewModel: PokemonViewModel by viewModels {
@@ -35,11 +30,11 @@ class MainActivity : AppCompatActivity() {
 
         setupRecyclerView()
 
-        //第一次執行可以清空DB
-//        pokemonViewModel.deletAll()
+        // 第一次執行可以清空DB
+        // pokemonViewModel.deleteAll()
         println("pokemonDB:" + pokemonViewModel.pokeL)
-//        如果DB沒有資料才fetch
 
+        // 如果DB沒有資料才fetch
         pokemonViewModel.typeTitleList.observe(this) { typeTitleList ->
             mainAdapter.refresh(typeTitleList)
         }
@@ -56,22 +51,22 @@ class MainActivity : AppCompatActivity() {
         tabArray.add(speedTab)
 
         defaultTab.setOnClickListener {
-            sortMethod = "DEFAULT"
+            sortMethod = resources.getString(R.string.default_tab)
             pokemonViewModel.sortByMethod(sortMethod)
             updateTabColor()
         }
         attackTab.setOnClickListener {
-            sortMethod = "ATK"
+            sortMethod = resources.getString(R.string.attack_tab)
             pokemonViewModel.sortByMethod(sortMethod)
             updateTabColor()
         }
         defenseTab.setOnClickListener {
-            sortMethod = "DEF"
+            sortMethod = resources.getString(R.string.defense_tab)
             pokemonViewModel.sortByMethod(sortMethod)
             updateTabColor()
         }
         speedTab.setOnClickListener {
-            sortMethod = "SPD"
+            sortMethod = resources.getString(R.string.speed_tab)
             pokemonViewModel.sortByMethod(sortMethod)
             updateTabColor()
         }

@@ -45,7 +45,7 @@ class PokemonViewModel(private val repository: PokemonRepository) : ViewModel() 
         repository.insertAll(*pokemons)
     }
 
-    fun deletAll() = viewModelScope.launch {
+    fun deleteAll() = viewModelScope.launch {
         repository.deleteAll()
     }
 
@@ -102,22 +102,22 @@ class PokemonViewModel(private val repository: PokemonRepository) : ViewModel() 
     fun sortByMethod(sort_method:String){
         for (i in pokeTypeList){
             var pokemon_filtered:List<Pokemon> = i.value!!
-            if (sort_method == "default") {
+            if (sort_method == "DEFAULT") {
                 pokemon_filtered = pokemon_filtered.sortedWith(compareBy { it.id }).toMutableList()
                 println("1:" + pokemon_filtered[0].attack)
             }
 
-            if (sort_method == "atk") {
+            if (sort_method == "ATK") {
                 pokemon_filtered =
                     pokemon_filtered.sortedWith(compareByDescending { it.attack }).toMutableList()
             }
 
-            if (sort_method == "def") {
+            if (sort_method == "DEF") {
                 pokemon_filtered =
                     pokemon_filtered.sortedWith(compareByDescending { it.defense }).toMutableList()
             }
 
-            if (sort_method == "spd") {
+            if (sort_method == "SPD") {
                 pokemon_filtered =
                     pokemon_filtered.sortedWith(compareByDescending { it.speed }).toMutableList()
             }
