@@ -12,7 +12,9 @@ import com.bumptech.glide.Glide
 import com.example.pokemonbook.MainActivity.Companion.pokeL
 
 class PokeAdapter(val pokemonViewModel: PokemonViewModel, val mainActivity: MainActivity) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    var pokemon_filtered: MutableList<Pokemon> = mutableListOf()
+    var pokemon_filtered = mapOf<String, List<Pokemon>>()
+    private var pokemons = listOf<Pokemon>()
+    private lateinit var type: String
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val view = LayoutInflater.from(parent?.context).inflate(R.layout.poke_row, parent, false)
@@ -22,10 +24,14 @@ class PokeAdapter(val pokemonViewModel: PokemonViewModel, val mainActivity: Main
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when(holder){
             is PokeViewHolder -> {
-                val pokeItem = pokemon_filtered[position]
+                pokemons = pokemon_filtered.values.map { it }[0]
+                type = pokemon_filtered.keys.first()
+                val pokeItem = pokemons[position]
                 var pokeNew = pokeItem
+
+                println("PokeViewHolder: ${pokemons.size}, $type, $pokeItem")
                 holder.apply {
-                    poke_layout.setBackgroundColor(Color.parseColor(getColorCode(pokeItem.typeofpokemon[0])))
+                    poke_layout.setBackgroundColor(Color.parseColor(getColorCode(type)))
                     pokename_textview.text = pokeItem.name
                     order_textview.text = pokeItem.id
                     atk_textview.text = holder.atk_textview.context.getString(R.string.ATK_num, pokeItem.attack)
@@ -72,11 +78,11 @@ class PokeAdapter(val pokemonViewModel: PokemonViewModel, val mainActivity: Main
     }
 
     override fun getItemCount(): Int {
-        return pokemon_filtered.size
+        return pokemon_filtered.values.map { it }[0].size
     }
 
-    fun refreshItems(pokemon_filtered: MutableList<Pokemon>) {
-        this.pokemon_filtered = pokemon_filtered
+    fun refreshItems(pokemonMap: Map<String, List<Pokemon>>) {
+        this.pokemon_filtered = pokemonMap
 //        if (sort_method == "atk"){
 //            this.pokemon_filtered = pokemon_filtered.sortedWith(compareBy{it.attack}).toMutableList()
 //            println("1:" + pokemon_filtered[0].attack + "3:" +pokemon_filtered[3].attack)
