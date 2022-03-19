@@ -13,6 +13,7 @@ class MainActivity : AppCompatActivity() {
     }
     private lateinit var recyclerViewMain: RecyclerView
     private lateinit var mainAdapter: MainAdapter
+    private lateinit var pokeAdapter: PokeAdapter
     private lateinit var defaultTab: TextView
     private lateinit var attackTab: TextView
     private lateinit var defenseTab: TextView
@@ -28,15 +29,23 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        setupRecyclerView()
-
         // 第一次執行可以清空DB
-        // pokemonViewModel.deleteAll()
-        println("pokemonDB:" + pokemonViewModel.pokeL)
+//         pokemonViewModel.deleteAll()
 
         // 如果DB沒有資料才fetch
         pokemonViewModel.typeTitleList.observe(this) { typeTitleList ->
             mainAdapter.refresh(typeTitleList)
+        }
+
+        val onClick : (PokeAdapter, String) -> Unit = { pokeAdapter: PokeAdapter, string: String ->
+            pokeAdapter.refreshItems(pokemonViewModel.initialTypeList.filter { it.key == string })
+        }
+
+        recyclerViewMain = findViewById(R.id.recyclerView_main)
+        with(recyclerViewMain){
+            layoutManager = LinearLayoutManager(this@MainActivity)
+            mainAdapter = MainAdapter(onClick, pokemonViewModel, this@MainActivity)
+                .apply { adapter = this }
         }
 
         defaultTab = findViewById(R.id.tab_default)
@@ -69,15 +78,6 @@ class MainActivity : AppCompatActivity() {
             sortMethod = resources.getString(R.string.speed_tab)
             pokemonViewModel.sortByMethod(sortMethod)
             updateTabColor()
-        }
-    }
-
-    private fun setupRecyclerView() {
-        recyclerViewMain = findViewById(R.id.recyclerView_main)
-        with(recyclerViewMain){
-            layoutManager = LinearLayoutManager(this@MainActivity)
-            mainAdapter = MainAdapter(pokemonViewModel, this@MainActivity)
-                .apply { adapter = this }
         }
     }
 
