@@ -6,6 +6,7 @@ import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.*
 import org.json.JSONArray
 import java.io.IOException
@@ -17,18 +18,20 @@ class PokemonViewModel(private val repository: PokemonRepository) : ViewModel() 
     val pokeTypeList: MutableList<MutableLiveData<List<Pokemon>>> = mutableListOf()
     var pokeSingle = MutableLiveData<Pokemon>()
     var pokeIndex = MutableLiveData<Int>()
+    val showProgressBar = MutableLiveData<Boolean>()
 
     init {
         CoroutineScope(Dispatchers.Default).launch {
-            if (pokeL.isEmpty()){
-                viewModelScope.launch {
-                    fetchJson()
-                }.join()
-                pokeL = repository.getPokemon()
-            }
             viewModelScope.launch {
+                showProgressBar.postValue(true)
+                if (pokeL.isEmpty()){
+                    fetchJson()
+                    pokeL = repository.getPokemon()
+                }
                 typeTitleList.value = getTypeTitle()
                 categorizePokemon()
+                showProgressBar.postValue(false)
+
                 println("pokeL:"+pokeL.size)
                 println("pokeTL:"+pokeTypeList.size)
             }
@@ -126,32 +129,34 @@ class PokemonViewModel(private val repository: PokemonRepository) : ViewModel() 
     }
 
     suspend fun fetchJson() {
-        println("Attempting to Fetch JSON")
+        withContext(Dispatchers.IO){
+            println("Attempting to Fetch JSON")
 
-        val url =
-            "https://gist.githubusercontent.com/mrcsxsiq/b94dbe9ab67147b642baa9109ce16e44/raw/97811a5df2df7304b5bc4fbb9ee018a0339b8a38"
-        val request = Request.Builder().url(url).build()
+            val url =
+                "https://gist.githubusercontent.com/mrcsxsiq/b94dbe9ab67147b642baa9109ce16e44/raw/97811a5df2df7304b5bc4fbb9ee018a0339b8a38"
+            val request = Request.Builder().url(url).build()
 
-        val client = OkHttpClient()
-        //requestCall: 非同步
-        client.newCall(request).enqueue(object : Callback { //callback:做完之後再回傳結果
-            override fun onFailure(call: Call, e: IOException) {
-                println("Failed to execute Request")
-            }
+            val client = OkHttpClient()
+            //requestCall: 非同步
+            client.newCall(request).enqueue(object : Callback { //callback:做完之後再回傳結果
+                override fun onFailure(call: Call, e: IOException) {
+                    println("Failed to execute Request")
+                }
 
-            override fun onResponse(call: Call, response: Response) {
-                val body = response?.body?.string()
-                val arr = JSONArray(body) //將資料轉成JSONArray
-                println(arr.length()) //809
+                override fun onResponse(call: Call, response: Response) {
+                    val body = response?.body?.string()
+                    val arr = JSONArray(body) //將資料轉成JSONArray
+                    println(arr.length()) //809
 
-                val gson = GsonBuilder().create()
-                val result =
-                    gson.fromJson<List<Pokemon>>(body, object : TypeToken<List<Pokemon>>() {}.type)
-                MainActivity.pokeL = result.toMutableList()
-                println("pokeL: " + MainActivity.pokeL.size) //809
-                insertAll(*result.toTypedArray())
-            }
-        })
+                    val gson = GsonBuilder().create()
+                    val result =
+                        gson.fromJson<List<Pokemon>>(body, object : TypeToken<List<Pokemon>>() {}.type)
+                    MainActivity.pokeL = result.toMutableList()
+                    println("pokeL: " + MainActivity.pokeL.size) //809
+                    insertAll(*result.toTypedArray())
+                }
+            })
+        }
     }
 }
 

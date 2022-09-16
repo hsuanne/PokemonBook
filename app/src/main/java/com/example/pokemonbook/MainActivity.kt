@@ -1,6 +1,8 @@
 package com.example.pokemonbook
 
 import android.os.Bundle
+import android.view.View
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -36,8 +38,16 @@ class MainActivity : AppCompatActivity() {
         println("pokemonDB:"+pokemonViewModel.pokeL)
 //        如果DB沒有資料才fetch
 
-        pokemonViewModel.typeTitleList.observe(this) { typeTitleList ->
+        val progressBar: ProgressBar = findViewById(R.id.progress_bar)
+        with(pokemonViewModel){
+            typeTitleList.observe(this@MainActivity) { typeTitleList ->
                 adapter.refresh(typeTitleList)
+            }
+
+            showProgressBar.observe(this@MainActivity) {
+                if (it) progressBar.visibility = View.VISIBLE
+                else progressBar.visibility = View.INVISIBLE
+            }
         }
 
         val default_tab: TextView = findViewById(R.id.tab_default)
