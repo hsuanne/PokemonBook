@@ -8,11 +8,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.gson.GsonBuilder
-import com.google.gson.reflect.TypeToken
 import okhttp3.*
-import org.json.JSONArray
-import java.io.IOException
 
 class MainActivity : AppCompatActivity() {
     private val pokemonViewModel: PokemonViewModel by viewModels {
@@ -24,29 +20,32 @@ class MainActivity : AppCompatActivity() {
         var sort_method: String = "default"
     }
 
+    val pokeAdapter = PokeAdapter()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val recyclerView_main: RecyclerView = findViewById(R.id.recyclerView_main)
-        recyclerView_main.layoutManager = LinearLayoutManager(this)
+        val progressBar: ProgressBar = findViewById(R.id.progress_bar)
 
-        val adapter = MainAdapter(pokemonViewModel, this)
+        val adapter = MainAdapter(
+            onTypeClicked = {refreshPokemonAdapter(it)}
+        )
+
+        recyclerView_main.layoutManager = LinearLayoutManager(this)
         recyclerView_main.adapter = adapter
 
         //第一次執行可以清空DB
 //        pokemonViewModel.deletAll()
         println("pokemonDB:"+pokemonViewModel.pokeL)
-//        如果DB沒有資料才fetch
 
-        val progressBar: ProgressBar = findViewById(R.id.progress_bar)
         with(pokemonViewModel){
             typeTitleList.observe(this@MainActivity) { typeTitleList ->
                 adapter.refresh(typeTitleList)
             }
 
             showProgressBar.observe(this@MainActivity) {
-                if (it) progressBar.visibility = View.VISIBLE
-                else progressBar.visibility = View.INVISIBLE
+                showProgressBar(it, progressBar)
             }
         }
 
@@ -73,32 +72,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun fetchJson(adapter: MainAdapter) {
-        println("Attempting to Fetch JSON")
+    private fun showProgressBar(it: Boolean, progressBar: ProgressBar) {
+        if (it) progressBar.visibility = View.VISIBLE
+        else progressBar.visibility = View.INVISIBLE
+    }
 
-        val url =
-            "https://gist.githubusercontent.com/mrcsxsiq/b94dbe9ab67147b642baa9109ce16e44/raw/97811a5df2df7304b5bc4fbb9ee018a0339b8a38"
-        val request = Request.Builder().url(url).build()
-
-        val client = OkHttpClient()
-        //requestCall: 非同步
-        client.newCall(request).enqueue(object : Callback { //callback:做完之後再回傳結果
-            override fun onFailure(call: Call, e: IOException) {
-                println("Failed to execute Request")
-            }
-
-            override fun onResponse(call: Call, response: Response) {
-                val body = response?.body?.string()
-                val arr = JSONArray(body) //將資料轉成JSONArray
-                println(arr.length()) //809
-
-                val gson = GsonBuilder().create()
-                val result =
-                    gson.fromJson<List<Pokemon>>(body, object : TypeToken<List<Pokemon>>() {}.type)
-                pokeL = result.toMutableList()
-                println("pokeL: " + pokeL.size) //809
-                pokemonViewModel.insertAll(*result.toTypedArray())
-            }
-        })
+    private fun refreshPokemonAdapter(position: Int): PokeAdapter {
+        pokemonViewModel.pokeTypeList[position].observe(this){
+            pokeAdapter.refreshItems(it.toMutableList())
+        }
+        return pokeAdapter
     }
 }
