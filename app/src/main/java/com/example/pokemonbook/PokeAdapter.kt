@@ -1,7 +1,5 @@
 package com.example.pokemonbook
 
-import android.app.Activity
-import android.content.Intent
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
@@ -9,17 +7,15 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.pokemonbook.MainActivity.Companion.pokeL
-import com.example.pokemonbook.MainActivity.Companion.sort_method
 
-class PokeAdapter(val pokemonViewModel: PokemonViewModel, val mainActivity: MainActivity) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class PokeAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var pokemon_filtered: MutableList<Pokemon> = mutableListOf()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        val view = LayoutInflater.from(parent?.context).inflate(R.layout.poke_row, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.poke_row, parent, false)
         return PokeViewHolder(view)
     }
 
@@ -35,7 +31,7 @@ class PokeAdapter(val pokemonViewModel: PokemonViewModel, val mainActivity: Main
                     atk_textview.text = holder.atk_textview.context.getString(R.string.ATK_num, pokeItem.attack)
                     def_textview.text = holder.def_textview.context.getString(R.string.DEF_num, pokeItem.defense)
                     spd_textview.text = holder.spd_textview.context.getString(R.string.SPD_num, pokeItem.speed)
-                    Glide.with(mainActivity.applicationContext).load(pokeItem.imageurl).into(holder.poke_imgview)
+                    Glide.with(this.itemView.context).load(pokeItem.imageurl).into(holder.poke_imgview)
                     if (pokeItem.favStatus==0){
                         heart_imgview.setColorFilter(Color.GRAY)
                     } else {

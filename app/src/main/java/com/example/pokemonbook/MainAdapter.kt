@@ -1,22 +1,16 @@
 package com.example.pokemonbook
 
 import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
-import android.graphics.drawable.LayerDrawable
-import android.text.Layout
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageView
 import android.widget.TextView
-import androidx.activity.viewModels
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.lifecycle.LiveData
 import androidx.recyclerview.widget.RecyclerView
 
 
-class MainAdapter(val pokemonViewModel: PokemonViewModel, val mainActivity: MainActivity): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class MainAdapter(
+    val onTypeClicked: (Int) -> PokeAdapter,
+): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
 //    private var pokemon: MutableList<Pokemon> = mutableListOf()
 //    val typeAll: MutableList<String> = mutableListOf()
@@ -40,23 +34,11 @@ class MainAdapter(val pokemonViewModel: PokemonViewModel, val mainActivity: Main
                     holder.type_textview.text = str
                     holder.type_textview.setBackgroundColor(Color.parseColor(getColorCode(str)))
 
-                    //若點textview,會把pokemon分類,把分類好的列表傳給pokeAdapter
-                    //filter後的pokemon列表
-//                    var pokemon_filtered:MutableList<Pokemon> = mutableListOf()
-                    //把這個列表給pokeAdapter
-                    val pokeAdapter = PokeAdapter(pokemonViewModel, mainActivity)
-
-                    //去拿對應的ListPokemon
-//                    val pokeL = pokemonViewModel.getPokeList(position, sort_method)
-
-                    pokemonViewModel.pokeTypeList[position].observe(mainActivity){
-                        pokeAdapter.refreshItems(it.toMutableList())
-                    }
                     //若type被點擊
                     holder.type_textview.setOnClickListener {
                         val recycler_poke:RecyclerView = holder.itemView.findViewById(R.id.recyclerView_poke)
                         if (!isClick) {
-                            recycler_poke.adapter = pokeAdapter
+                            recycler_poke.adapter = onTypeClicked(position)
                             isClick = true
                         } else {
                             recycler_poke.adapter = null

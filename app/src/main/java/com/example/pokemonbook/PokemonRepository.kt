@@ -1,31 +1,30 @@
 package com.example.pokemonbook
 
-import androidx.annotation.WorkerThread
-import androidx.lifecycle.LiveData
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class PokemonRepository(private val pokemonDao: PokemonDao) {
-    @Suppress("RedundantSuspendModifier")
-    @WorkerThread
     suspend fun getPokemon():List<Pokemon>{
-        return pokemonDao.getPokemon()
+        return withContext(Dispatchers.IO) {
+            pokemonDao.getPokemon()
+        }
     }
 
-    @Suppress("RedundantSuspendModifier")
-    @WorkerThread
     suspend fun insert(pokemon:Pokemon){
-        pokemonDao.insert(pokemon)
+        withContext(Dispatchers.IO) {
+            pokemonDao.insert(pokemon)
+        }
     }
 
-    @Suppress("RedundantSuspendModifier")
-    @WorkerThread
     suspend fun insertAll(vararg pokemons: Pokemon) {
-        pokemonDao.insertAll(*pokemons)
+        withContext(Dispatchers.IO) {
+            pokemonDao.insertAll(*pokemons)
+        }
     }
 
-    @Suppress("RedundantSuspendModifier")
-    @WorkerThread
     suspend fun deleteAll(){
-        pokemonDao.deleteAll()
+        withContext(Dispatchers.IO) {
+            pokemonDao.deleteAll()
+        }
     }
 }
