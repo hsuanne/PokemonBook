@@ -35,11 +35,11 @@ class MainAdapter(
                     holder.type_textview.setBackgroundColor(Color.parseColor(getColorCode(str)))
 
                     val recycler_poke:RecyclerView = holder.itemView.findViewById(R.id.recyclerView_poke)
-
                     //若type被點擊
                     holder.type_textview.setOnClickListener {
                         if (!isClick) {
                             recycler_poke.adapter = onTypeClicked(position, recycler_poke)
+
                             isClick = true
                         } else {
                             recycler_poke.adapter = onTypeClicked(null, recycler_poke)

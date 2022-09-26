@@ -8,10 +8,9 @@ import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.widget.NestedScrollView
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import okhttp3.*
 
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -31,6 +30,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         val recyclerView_main: RecyclerView = findViewById(R.id.recyclerView_main)
         val progressBar: ProgressBar = findViewById(R.id.progress_bar)
+        var lastVisibleItemIndex = 0
 
         val adapter = MainAdapter(
             onTypeClicked = { position, recyclerView ->
@@ -39,7 +39,17 @@ class MainActivity : AppCompatActivity() {
                     return@MainAdapter null
                 } else {
                     pokemonViewModel.setIsPokemonTypeShown(true)
-                    refreshPokemonAdapter(position, recyclerView)
+                    recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                            super.onScrolled(recyclerView, dx, dy)
+                            val lm = recyclerView.layoutManager as GridLayoutManager
+                            lastVisibleItemIndex = lm.findLastCompletelyVisibleItemPosition()
+                        }
+                    })
+                    recyclerView.layoutManager?.isAutoMeasureEnabled = true
+                    recyclerView.isNestedScrollingEnabled = false
+                    recyclerView.setHasFixedSize(false)
+                    refreshPokemonAdapter(position)
                 }
             }
         )
@@ -47,11 +57,12 @@ class MainActivity : AppCompatActivity() {
         recyclerView_main.layoutManager = LinearLayoutManager(this)
         recyclerView_main.adapter = adapter
 
-        val nestedScrollView_main = findViewById<NestedScrollView>(R.id.main_nestedScrollView)
-        nestedScrollView_main.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
-            val dy = scrollY - oldScrollY
-            pokemonViewModel.loadMore(dy)
-        }
+        recyclerView_main.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                pokemonViewModel.loadMore(dy, lastVisibleItemIndex)
+            }
+        })
 
         //第一次執行可以清空DB
 //        pokemonViewModel.deletAll()
@@ -99,8 +110,8 @@ class MainActivity : AppCompatActivity() {
         else progressBar.visibility = View.INVISIBLE
     }
 
-    private fun refreshPokemonAdapter(position: Int, recyclerView: RecyclerView): PokeAdapter {
-        pokemonViewModel.categorizePokemonsByType(position, recyclerView)
+    private fun refreshPokemonAdapter(position: Int): PokeAdapter {
+        pokemonViewModel.categorizePokemonsByType(position)
         return pokeAdapter
     }
 }
