@@ -1,27 +1,31 @@
 package com.example.pokemonbook
 
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.NestedScrollView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import okhttp3.*
 
 class MainActivity : AppCompatActivity() {
-    private val pokemonViewModel: PokemonViewModel by viewModels {
-        PokemonViewModelFactory((application as PokemonApplication).repository)
-    }
-
     companion object {
         var pokeL: MutableList<Pokemon> = mutableListOf() //用gson抓到的資料會存進這個List
         var sort_method: String = "default"
     }
 
+    private val pokemonViewModel: PokemonViewModel by viewModels {
+        PokemonViewModelFactory((application as PokemonApplication).repository)
+    }
+
     val pokeAdapter = PokeAdapter()
 
+    @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -29,11 +33,25 @@ class MainActivity : AppCompatActivity() {
         val progressBar: ProgressBar = findViewById(R.id.progress_bar)
 
         val adapter = MainAdapter(
-            onTypeClicked = {refreshPokemonAdapter(it)}
+            onTypeClicked = { position, recyclerView ->
+                if (position == null) {
+                    pokemonViewModel.setIsPokemonTypeShown(false)
+                    return@MainAdapter null
+                } else {
+                    pokemonViewModel.setIsPokemonTypeShown(true)
+                    refreshPokemonAdapter(position, recyclerView)
+                }
+            }
         )
 
         recyclerView_main.layoutManager = LinearLayoutManager(this)
         recyclerView_main.adapter = adapter
+
+        val nestedScrollView_main = findViewById<NestedScrollView>(R.id.main_nestedScrollView)
+        nestedScrollView_main.setOnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
+            val dy = scrollY - oldScrollY
+            pokemonViewModel.loadMore(dy)
+        }
 
         //第一次執行可以清空DB
 //        pokemonViewModel.deletAll()
@@ -46,6 +64,10 @@ class MainActivity : AppCompatActivity() {
 
             showProgressBar.observe(this@MainActivity) {
                 showProgressBar(it, progressBar)
+            }
+
+            pokemonsByType.observe(this@MainActivity){
+                pokeAdapter.refreshItems(it.toMutableList())
             }
         }
 
@@ -77,10 +99,8 @@ class MainActivity : AppCompatActivity() {
         else progressBar.visibility = View.INVISIBLE
     }
 
-    private fun refreshPokemonAdapter(position: Int): PokeAdapter {
-        pokemonViewModel.pokeTypeList[position].observe(this){
-            pokeAdapter.refreshItems(it.toMutableList())
-        }
+    private fun refreshPokemonAdapter(position: Int, recyclerView: RecyclerView): PokeAdapter {
+        pokemonViewModel.categorizePokemonsByType(position, recyclerView)
         return pokeAdapter
     }
 }

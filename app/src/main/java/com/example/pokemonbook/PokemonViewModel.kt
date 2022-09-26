@@ -1,9 +1,10 @@
 package com.example.pokemonbook
 
 import androidx.lifecycle.*
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -16,25 +17,29 @@ class PokemonViewModel(private val repository: PokemonRepository) : ViewModel() 
     val typeTitleList = MutableLiveData<List<String>>()
     var pokeL: List<Pokemon> = listOf()
     val pokeTypeList: MutableList<MutableLiveData<List<Pokemon>>> = mutableListOf()
+    val pokemonsByType = MutableLiveData<List<Pokemon>>()
     var pokeSingle = MutableLiveData<Pokemon>()
     var pokeIndex = MutableLiveData<Int>()
     val showProgressBar = MutableLiveData<Boolean>()
+    var typePage = 1
+    var position = 0
+    var pokemonsByTypeSize = 0
+    private lateinit var pokeRecyclerView: RecyclerView // FIXME: context leak
+    private var isPokemonsTypeShown = false
 
     init {
-        CoroutineScope(Dispatchers.Default).launch {
-            viewModelScope.launch {
-                showProgressBar.postValue(true)
-                if (pokeL.isEmpty()){
-                    fetchJson()
-                    pokeL = repository.getPokemon()
-                }
-                typeTitleList.value = getTypeTitle()
-                categorizePokemon()
-                showProgressBar.postValue(false)
-
-                println("pokeL:"+pokeL.size)
-                println("pokeTL:"+pokeTypeList.size)
+        viewModelScope.launch {
+            showProgressBar.postValue(true)
+            if (pokeL.isEmpty()){
+                fetchJson()
+                pokeL = repository.getPokemon()
             }
+            typeTitleList.value = getTypeTitle()
+            categorizePokemon()
+            showProgressBar.postValue(false)
+
+            println("pokeL:"+pokeL.size)
+            println("pokeTL:"+pokeTypeList.size)
         }
     }
 
@@ -128,6 +133,28 @@ class PokemonViewModel(private val repository: PokemonRepository) : ViewModel() 
         }
     }
 
+    fun loadMore(dy: Int) {
+        if (!isPokemonsTypeShown) return
+        val lastVisisbleItemIndex = (pokeRecyclerView.layoutManager as GridLayoutManager).findLastVisibleItemPosition()
+
+        if (lastVisisbleItemIndex != pokemonsByTypeSize - 1 && dy > 0) {
+            typePage += 1
+            pokemonsByType.value = pokeTypeList[position].value?.take(typePage * 10)
+        }
+    }
+
+    fun categorizePokemonsByType(position: Int, recyclerView: RecyclerView) {
+        typePage = 0
+        this.position = position
+        pokeRecyclerView = recyclerView
+        pokemonsByTypeSize = pokeTypeList[position].value?.size!!
+        pokemonsByType.value = pokeTypeList[position].value?.take(10)
+    }
+
+    fun setIsPokemonTypeShown(isShown: Boolean) {
+        isPokemonsTypeShown = isShown
+    }
+
     suspend fun fetchJson() {
         withContext(Dispatchers.IO){
             println("Attempting to Fetch JSON")
@@ -152,7 +179,7 @@ class PokemonViewModel(private val repository: PokemonRepository) : ViewModel() 
                     val result =
                         gson.fromJson<List<Pokemon>>(body, object : TypeToken<List<Pokemon>>() {}.type)
                     MainActivity.pokeL = result.toMutableList()
-                    println("pokeL: " + MainActivity.pokeL.size) //809
+                    println("fetch json pokeL: " + MainActivity.pokeL.size) //809
                     insertAll(*result.toTypedArray())
                 }
             })
