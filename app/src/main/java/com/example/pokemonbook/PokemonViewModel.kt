@@ -1,8 +1,6 @@
 package com.example.pokemonbook
 
 import androidx.lifecycle.*
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
@@ -24,7 +22,6 @@ class PokemonViewModel(private val repository: PokemonRepository) : ViewModel() 
     var typePage = 1
     var position = 0
     var pokemonsByTypeSize = 0
-    private lateinit var pokeRecyclerView: RecyclerView // FIXME: context leak
     private var isPokemonsTypeShown = false
 
     init {
@@ -133,20 +130,25 @@ class PokemonViewModel(private val repository: PokemonRepository) : ViewModel() 
         }
     }
 
-    fun loadMore(dy: Int) {
+    fun loadMore(dy: Int, lastVisibleItemIndex: Int) {
         if (!isPokemonsTypeShown) return
-        val lastVisisbleItemIndex = (pokeRecyclerView.layoutManager as GridLayoutManager).findLastVisibleItemPosition()
-
-        if (lastVisisbleItemIndex != pokemonsByTypeSize - 1 && dy > 0) {
+        val loadedPokemons = pokemonsByType.value?.size?: 0
+        if (lastVisibleItemIndex == loadedPokemons - 1 && dy > 5) {
             typePage += 1
-            pokemonsByType.value = pokeTypeList[position].value?.take(typePage * 10)
+            viewModelScope.launch {
+                showProgressBar.postValue(true)
+                withContext(Dispatchers.IO) {
+                    if (typePage == 1) pokemonsByType.postValue(pokeTypeList[position].value?.take(typePage * 10))
+                    else pokemonsByType.postValue(pokeTypeList[position].value?.take(10 + typePage * 2))
+                }
+                showProgressBar.postValue(false)
+            }
         }
     }
 
-    fun categorizePokemonsByType(position: Int, recyclerView: RecyclerView) {
+    fun categorizePokemonsByType(position: Int) {
         typePage = 0
         this.position = position
-        pokeRecyclerView = recyclerView
         pokemonsByTypeSize = pokeTypeList[position].value?.size!!
         pokemonsByType.value = pokeTypeList[position].value?.take(10)
     }
