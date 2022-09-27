@@ -46,9 +46,6 @@ class MainActivity : AppCompatActivity() {
                             lastVisibleItemIndex = lm.findLastCompletelyVisibleItemPosition()
                         }
                     })
-                    recyclerView.layoutManager?.isAutoMeasureEnabled = true
-                    recyclerView.isNestedScrollingEnabled = false
-                    recyclerView.setHasFixedSize(false)
                     refreshPokemonAdapter(position)
                 }
             }
@@ -66,6 +63,7 @@ class MainActivity : AppCompatActivity() {
 
         //第一次執行可以清空DB
 //        pokemonViewModel.deletAll()
+        // FIXME: first time open app doesn't work
         println("pokemonDB:"+pokemonViewModel.pokeL)
 
         with(pokemonViewModel){
