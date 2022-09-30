@@ -109,7 +109,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun refreshPokemonAdapter(position: Int): PokeAdapter {
-        pokemonViewModel.categorizePokemonsByType(position)
+        pokemonViewModel.refreshViewModelOnTypeClicked(position)
         return pokeAdapter
     }
 }

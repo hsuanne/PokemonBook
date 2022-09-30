@@ -27,12 +27,13 @@ class PokemonViewModel(private val repository: PokemonRepository) : ViewModel() 
     init {
         viewModelScope.launch {
             showProgressBar.postValue(true)
+            pokeL = repository.getPokemon()
             if (pokeL.isEmpty()){
                 fetchJson()
                 pokeL = repository.getPokemon()
             }
             typeTitleList.value = getTypeTitle()
-            categorizePokemon()
+            categorizePokemonByType()
             showProgressBar.postValue(false)
 
             println("pokeL:"+pokeL.size)
@@ -85,17 +86,12 @@ class PokemonViewModel(private val repository: PokemonRepository) : ViewModel() 
         return typeAll.toList()
     }
 
-    //先把pokemon依照type全部分類好 (pokeTypeList)
-    fun categorizePokemon() {
-        val tmpTitle = typeTitleList.value!!
-        for (j in tmpTitle) {
-            var tmpL: MutableList<Pokemon> = mutableListOf()
-//            val currentType = typeList[j]
-            for (i in pokeL) {
-//                val p = pokeL[i]
-//                val t = p.typeofpokemon[0]
-                if (i.typeofpokemon[0] == j) {
-                    tmpL.add(i)
+    private fun categorizePokemonByType() {
+        for (title in typeTitleList.value!!) {
+            val tmpL: MutableList<Pokemon> = mutableListOf()
+            for (pokemon in pokeL) {
+                if (pokemon.typeofpokemon[0] == title) {
+                    tmpL.add(pokemon)
                 }
             }
             val tmpLive=MutableLiveData<List<Pokemon>>()
@@ -146,7 +142,7 @@ class PokemonViewModel(private val repository: PokemonRepository) : ViewModel() 
         }
     }
 
-    fun categorizePokemonsByType(position: Int) {
+    fun refreshViewModelOnTypeClicked(position: Int) {
         typePage = 0
         this.position = position
         pokemonsByTypeSize = pokeTypeList[position].value?.size!!
