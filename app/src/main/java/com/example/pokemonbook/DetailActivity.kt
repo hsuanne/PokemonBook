@@ -1,24 +1,18 @@
 package com.example.pokemonbook
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.example.pokemonbook.MainActivity.Companion.pokeL
 
 class DetailActivity : AppCompatActivity(){
     companion object{
@@ -30,9 +24,11 @@ class DetailActivity : AppCompatActivity(){
         }
     }
 
-    private val detailViewModel: PokemonViewModel by viewModels {
+    private val pokemonViewModel: PokemonViewModel by viewModels {
         PokemonViewModelFactory((application as PokemonApplication).repository)
     }
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,7 +37,7 @@ class DetailActivity : AppCompatActivity(){
         //open bundle
         val pokemon = intent.extras?.getParcelable<Pokemon>("name")
         if (pokemon!=null) {
-            detailViewModel.setCurrentPokemon(pokemon)
+            pokemonViewModel.setCurrentPokemon(pokemon)
 //            for (p in pokeL){
 //                if (p.name.equals(pokemon.name)){
 //                    var ind = pokeL.indexOf(p)
@@ -51,7 +47,7 @@ class DetailActivity : AppCompatActivity(){
 //            }
         }
 
-        detailViewModel.pokeSingle.observe(this){ it ->
+        pokemonViewModel.pokeSingle.observe(this){ it ->
                 if (it != null) {
                         Toast.makeText(this, "it_favStatus:${it.favStatus}", Toast.LENGTH_SHORT).show()
                         bind(it)
@@ -61,15 +57,15 @@ class DetailActivity : AppCompatActivity(){
         val leftButton = findViewById<TextView>(R.id.left_button)
         val rightButton = findViewById<TextView>(R.id.right_button)
 
-
-        detailViewModel.pokeIndex.observe(this){ index ->
+        var pokeL = pokemonViewModel.pokeL
+        pokemonViewModel.pokeIndex.observe(this){ index ->
             leftButton.setOnClickListener {
                 var index_b = index - 1
                 if(index_b<0) {
                     index_b = pokeL.size-1
                 }
-                detailViewModel.setCurrentPokemon(pokeL[index_b])
-                detailViewModel.pokeIndex.value = index_b
+                pokemonViewModel.setCurrentPokemon(pokeL[index_b])
+                pokemonViewModel.pokeIndex.value = index_b
                 Toast.makeText(this, "click_fav:"+ pokeL[index_b].favStatus, Toast.LENGTH_SHORT).show()
             }
             rightButton.setOnClickListener {
@@ -77,8 +73,8 @@ class DetailActivity : AppCompatActivity(){
                 if (index_b>= pokeL.size){
                     index_b = 0
                 }
-                detailViewModel.setCurrentPokemon(pokeL[index_b])
-                detailViewModel.pokeIndex.value = index_b
+                pokemonViewModel.setCurrentPokemon(pokeL[index_b])
+                pokemonViewModel.pokeIndex.value = index_b
             }
         }
 
