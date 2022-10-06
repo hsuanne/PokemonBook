@@ -9,7 +9,6 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.example.pokemonbook.MainActivity.Companion.pokeL
 
 class PokeAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     var pokemon_filtered: MutableList<Pokemon> = mutableListOf()
@@ -41,7 +40,7 @@ class PokeAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                         if (pokeItem.favStatus == 1){
                             pokeItem.favStatus = 0
                             heart_imgview.setColorFilter(Color.GRAY)
-                            for (p in pokeL){
+                            for (p in pokemon_filtered){
                                 if (p.name == pokeItem.name){
                                     p.favStatus = 0
                                     pokeNew = p

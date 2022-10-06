@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView
 
 class MainActivity : AppCompatActivity() {
     companion object {
-        var pokeL: MutableList<Pokemon> = mutableListOf() //用gson抓到的資料會存進這個List
         var sort_method: String = "default"
     }
 
@@ -64,7 +63,6 @@ class MainActivity : AppCompatActivity() {
         //第一次執行可以清空DB
 //        pokemonViewModel.deletAll()
         // FIXME: first time open app doesn't work
-        println("pokemonDB:"+pokemonViewModel.pokeL)
 
         with(pokemonViewModel){
             typeTitleList.observe(this@MainActivity) { typeTitleList ->

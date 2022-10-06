@@ -29,7 +29,7 @@ class PokemonViewModel(private val repository: PokemonRepository) : ViewModel() 
             showProgressBar.postValue(true)
             pokeL = repository.getPokemon()
             if (pokeL.isEmpty()){
-                fetchJson()
+                launch { fetchJson() }.join()
                 pokeL = repository.getPokemon()
             }
             typeTitleList.value = getTypeTitle()
@@ -57,7 +57,7 @@ class PokemonViewModel(private val repository: PokemonRepository) : ViewModel() 
 
     fun setCurrentPokemon(pokemon: Pokemon){
         pokeSingle.value = pokemon
-        for(p in MainActivity.pokeL){
+        for(p in pokeL){
             if (p.name.equals(pokemon.name)){
                 editPoke(p)
             }
@@ -65,9 +65,9 @@ class PokemonViewModel(private val repository: PokemonRepository) : ViewModel() 
     }
 
     fun editPoke(pokemon: Pokemon){
-        var indexP = MainActivity.pokeL.indexOf(pokemon)
+        var indexP = pokeL.indexOf(pokemon)
         pokeIndex.value = indexP
-        MainActivity.pokeL[indexP] = pokemon
+        pokeL.toMutableList()[indexP] = pokemon
     }
 
     fun getTypeTitle(): List<String> {
@@ -176,8 +176,6 @@ class PokemonViewModel(private val repository: PokemonRepository) : ViewModel() 
                     val gson = GsonBuilder().create()
                     val result =
                         gson.fromJson<List<Pokemon>>(body, object : TypeToken<List<Pokemon>>() {}.type)
-                    MainActivity.pokeL = result.toMutableList()
-                    println("fetch json pokeL: " + MainActivity.pokeL.size) //809
                     insertAll(*result.toTypedArray())
                 }
             })
