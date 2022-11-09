@@ -38,10 +38,11 @@ class MainAdapter(
                     //若type被點擊
                     holder.type_textview.setOnClickListener {
                         if (!isClick) {
+                            println("qwer!: $isClick")
                             recycler_poke.adapter = onTypeClicked(position, recycler_poke)
-
                             isClick = true
                         } else {
+                            println("qwer: $isClick")
                             recycler_poke.adapter = onTypeClicked(null, recycler_poke)
                             isClick = false
                         }

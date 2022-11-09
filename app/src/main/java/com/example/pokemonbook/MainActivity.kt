@@ -21,7 +21,8 @@ class MainActivity : AppCompatActivity() {
         PokemonViewModelFactory((application as PokemonApplication).repository)
     }
 
-    val pokeAdapter = PokeAdapter()
+    var pokeAdapter = PokeAdapter()
+    private var lastPokeAdapter: PokeAdapter? = null
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,9 +35,11 @@ class MainActivity : AppCompatActivity() {
         val adapter = MainAdapter(
             onTypeClicked = { position, recyclerView ->
                 if (position == null) {
+                    println("qwer pnull: $position")
                     pokemonViewModel.setIsPokemonTypeShown(false)
                     return@MainAdapter null
                 } else {
+                    println("qwer p: $position")
                     pokemonViewModel.setIsPokemonTypeShown(true)
                     recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
                         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -74,7 +77,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             pokemonsByType.observe(this@MainActivity){
-                pokeAdapter.refreshItems(it.toMutableList())
+                lastPokeAdapter?.refreshItems(it.toMutableList())
             }
         }
 
@@ -107,7 +110,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun refreshPokemonAdapter(position: Int): PokeAdapter {
+        lastPokeAdapter = PokeAdapter()
         pokemonViewModel.refreshViewModelOnTypeClicked(position)
-        return pokeAdapter
+        return lastPokeAdapter!!
     }
 }
