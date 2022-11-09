@@ -130,13 +130,15 @@ class PokemonViewModel(private val repository: PokemonRepository) : ViewModel() 
         if (!isPokemonsTypeShown) return
         val loadedPokemons = pokemonsByType.value?.size?: 0
         if (lastVisibleItemIndex == loadedPokemons - 1 && dy > 5) {
-            if (10 + typePage * 2 > pokeTypeList[position].value?.size!!) return
+            val pokeTypeListByPosition = pokeTypeList[position].value
+            val baseLoadPokemonsNum = 10 + typePage * 10
+            if (baseLoadPokemonsNum > pokeTypeListByPosition?.size!!) return
             typePage += 1
             viewModelScope.launch {
                 showProgressBar.postValue(true)
                 withContext(Dispatchers.IO) {
-                    if (typePage == 1) pokemonsByType.postValue(pokeTypeList[position].value?.take(typePage * 10))
-                    else pokemonsByType.postValue(pokeTypeList[position].value?.take(10 + typePage * 2))
+                    if (typePage == 1) pokemonsByType.postValue(pokeTypeListByPosition.take(typePage * 10))
+                    else pokemonsByType.postValue(pokeTypeListByPosition.take(baseLoadPokemonsNum))
                 }
                 showProgressBar.postValue(false)
             }
