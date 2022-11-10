@@ -22,7 +22,7 @@ class PokemonViewModel(private val repository: PokemonRepository) : ViewModel() 
     var typePage = 1
     var position = 0
     var pokemonsByTypeSize = 0
-    private var isPokemonsTypeShown = false
+    private var isPokemonTypeShownMap = mutableMapOf<String, Boolean>()
 
     init {
         viewModelScope.launch {
@@ -33,6 +33,7 @@ class PokemonViewModel(private val repository: PokemonRepository) : ViewModel() 
                 pokeL = repository.getPokemon()
             }
             typeTitleList.value = getTypeTitle()
+            isPokemonTypeShownMap = typeTitleList.value!!.associateWith { false }.toMutableMap()
             categorizePokemonByType()
             showProgressBar.postValue(false)
 
@@ -127,7 +128,7 @@ class PokemonViewModel(private val repository: PokemonRepository) : ViewModel() 
     }
 
     fun loadMore(dy: Int, lastVisibleItemIndex: Int) {
-        if (!isPokemonsTypeShown) return
+        if (isPokemonTypeShownMap.all { !it.value }) return
         val loadedPokemons = pokemonsByType.value?.size?: 0
         if (lastVisibleItemIndex == loadedPokemons - 1 && dy > 5) {
             val pokeTypeListByPosition = pokeTypeList[position].value
@@ -152,8 +153,13 @@ class PokemonViewModel(private val repository: PokemonRepository) : ViewModel() 
         pokemonsByType.value = pokeTypeList[position].value?.take(10)
     }
 
-    fun setIsPokemonTypeShown(isShown: Boolean) {
-        isPokemonsTypeShown = isShown
+    fun setIsPokemonTypeShown(position: Int, isShown: Boolean) {
+        val typeName = typeTitleList.value?.get(position)!!
+        isPokemonTypeShownMap[typeName] = isShown
+    }
+
+    fun getIsPokemonTypeShown(): Boolean {
+        return isPokemonTypeShownMap.any { it.value }
     }
 
     suspend fun fetchJson() {
