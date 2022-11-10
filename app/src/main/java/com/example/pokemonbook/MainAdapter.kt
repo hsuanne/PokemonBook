@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 
 
 class MainAdapter(
-    val onTypeClicked: (Int?, RecyclerView) -> PokeAdapter?,
+    val onTypeClicked: (Boolean, Int, RecyclerView) -> PokeAdapter?,
 ): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
 //    private var pokemon: MutableList<Pokemon> = mutableListOf()
@@ -38,12 +38,11 @@ class MainAdapter(
                     //若type被點擊
                     holder.type_textview.setOnClickListener {
                         if (!isClick) {
-                            recycler_poke.adapter = onTypeClicked(position, recycler_poke)
-
                             isClick = true
+                            recycler_poke.adapter = onTypeClicked(isClick, position, recycler_poke)
                         } else {
-                            recycler_poke.adapter = onTypeClicked(null, recycler_poke)
                             isClick = false
+                            recycler_poke.adapter = onTypeClicked(isClick, position, recycler_poke)
                         }
                     }
                 }
